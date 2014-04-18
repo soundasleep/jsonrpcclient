@@ -15,12 +15,12 @@ Following this logic, the project is conceived to ensure the best code usability
 
 Any comments, criticisms, suggests and clarification requests can be addressed to info@jsonrpcphp.org. Any observation will be welcome. 
 
-# Git fork
+## Git fork
 
 This is a fork of the original project from http://jsonrpcphp.org/
 which only adds [Composer](http://getcomposer.org/) support.
 
-# Copyright
+## Copyright
 
 Copyright 2007 Sergio Vaccaro <sergio@inservibile.org>
 
