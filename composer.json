@@ -1,6 +1,6 @@
 {
     "name": "soundasleep/jsonrpcclient",
-    "description": "A simple PHP implementation of a JSON-RPC client and server.",
+    "description": "A simple PHP implementation of a JSON-RPC client and server",
     "version": "0.1.0",
     "type": "library",
     "keywords": [ "php", "json-rpc", "rpc" ],
