@@ -1,0 +1,27 @@
+{
+    "name": "soundasleep/jsonrpcclient",
+    "description": "A simple PHP implementation of a JSON-RPC client and server.",
+    "version": "0.1.0",
+    "type": "library",
+    "keywords": [ "php", "json-rpc", "rpc" ],
+    "homepage": "https://github.com/soundasleep/jsonrpcclient",
+    "license": "GPLv2",
+    "authors": [
+        {
+            "name": "Sergio Vaccaro",
+            "homepage": "http://jsonrpcphp.org/"
+        },
+        {
+            "name": "Jevon Wright",
+            "homepage": "http://jevon.org",
+            "role": "Packager"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.2"
+    },
+    "support": {
+        "email": "info@jsonrpcphp.org",
+        "source": "http://jsonrpcphp.org/"
+    }
+}
