@@ -60,8 +60,9 @@ class jsonRPCClient {
 	 *
 	 * @param string $url
 	 * @param boolean $debug
+	 * @param string $proxy
 	 */
-	public function __construct($url,$debug = false) {
+	public function __construct($url, $debug = false, $proxy = false) {
 		// server URL
 		$this->url = $url;
 		// proxy
@@ -91,7 +92,9 @@ class jsonRPCClient {
 	 * @param array $params
 	 * @return array
 	 */
-	public function __call($method,$params) {
+	public function __call($method, $params) {
+		
+		++$this->id;
 		
 		// check
 		if (!is_scalar($method)) {
@@ -114,13 +117,12 @@ class jsonRPCClient {
 		}
 		
 		// prepares the request
-		$request = array(
+		$request = json_encode(array(
 						'method' => $method,
 						'params' => $params,
 						'id' => $currentId
-						);
-		$request = json_encode($request);
-		$this->debug && $this->debug.='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
+						));
+		$this->debug && $this->debug .= '***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****' . "\n\n";
 		
 		// performs the HTTP POST
 		$opts = array ('http' => array (
@@ -132,34 +134,34 @@ class jsonRPCClient {
 		if ($fp = fopen($this->url, 'r', false, $context)) {
 			$response = '';
 			while($row = fgets($fp)) {
-				$response.= trim($row)."\n";
+				$response .= trim($row)."\n";
 			}
-			$this->debug && $this->debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
-			$response = json_decode($response,true);
+			fclose($fp);
+			$this->debug && $this->debug .= '***** Server response *****' . "\n" . $response . '***** End of server response *****' . "\n";
+			$response = json_decode($response, true);
 		} else {
-			throw new Exception('Unable to connect to '.$this->url);
+			throw new Exception('Unable to connect to ' . $this->url);
 		}
 		
 		// debug output
 		if ($this->debug) {
-			echo nl2br($debug);
+			echo nl2br($this->debug);
 		}
 		
 		// final checks and return
 		if (!$this->notification) {
 			// check
 			if ($response['id'] != $currentId) {
-				throw new Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
+				throw new Exception('Incorrect response id (request id: ' . $currentId . ', response id: ' . $response['id'] . ')');
 			}
 			if (!is_null($response['error'])) {
-				throw new Exception('Request error: '.$response['error']);
+				throw new Exception('Request error: ' . $response['error']);
 			}
 			
 			return $response['result'];
-			
-		} else {
-			return true;
 		}
+
+		return true;
 	}
+
 }
-?>
