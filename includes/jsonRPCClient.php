@@ -62,7 +62,7 @@ class jsonRPCClient {
 	 * @param boolean $debug
 	 * @param string $proxy
 	 */
-	public function __construct($url, $debug = false, $proxy = false) {
+	public function __construct($url, $debug = false, $proxy = '') {
 		// server URL
 		$this->url = $url;
 		// proxy
@@ -70,7 +70,7 @@ class jsonRPCClient {
 		// debug state
 		empty($debug) ? $this->debug = false : $this->debug = true;
 		// message id
-		$this->id = 1;
+		$this->id = 0;
 	}
 	
 	/**
@@ -123,7 +123,7 @@ class jsonRPCClient {
 						'id' => $currentId
 						));
 		$this->debug && $this->debug .= '***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****' . "\n\n";
-		
+
 		// performs the HTTP POST
 		$opts = array ('http' => array (
 							'method'  => 'POST',
