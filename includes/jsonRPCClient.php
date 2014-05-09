@@ -28,63 +28,91 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * @author sergio <jsonrpcphp@inservibile.org>
  */
 class jsonRPCClient {
-	
+
+	const DEBUG_REQUEST = 1;
+	const DEBUG_RESPONSE = 2;
+
 	/**
 	 * Debug state
 	 *
 	 * @var boolean
 	 */
-	private $debug;
+	private $debug = 0;
 	
 	/**
 	 * The server URL
 	 *
 	 * @var string
 	 */
-	private $url;
+	private $url = null;
 	/**
 	 * The request id
 	 *
 	 * @var integer
 	 */
-	private $id;
+	private $id = 0;
 	/**
 	 * If true, notifications are performed instead of requests
 	 *
 	 * @var boolean
 	 */
 	private $notification = false;
+	/**
+	 *
+	 * @var string
+	 */
+	private $proxy = '';
 	
 	/**
 	 * Takes the connection parameters
 	 *
 	 * @param string $url
-	 * @param boolean $debug
-	 * @param string $proxy
 	 */
-	public function __construct($url, $debug = false, $proxy = '') {
+	public function __construct($url) {
 		// server URL
 		$this->url = $url;
-		// proxy
-		empty($proxy) ? $this->proxy = '' : $this->proxy = $proxy;
-		// debug state
-		empty($debug) ? $this->debug = false : $this->debug = true;
-		// message id
-		$this->id = 0;
 	}
-	
+
+	/**
+	 * debug state
+	 * @param int $debug
+	 * DEBUG_REQUEST = 1;
+	 * DEBUG_RESPONSE = 2;
+	 */
+	public function setDebug($debug) {
+		$this->debug = (int) $debug;
+	}
+
+	/**
+	 * debug state
+	 * @param string $proxy
+	 */
+	public function setProxy($proxy) {
+		$this->proxy = $proxy;
+	}
+
 	/**
 	 * Sets the notification state of the object. In this state, notifications are performed, instead of requests.
 	 *
 	 * @param boolean $notification
 	 */
 	public function setRPCNotification($notification) {
-		empty($notification) ?
-							$this->notification = false
-							:
-							$this->notification = true;
+		$this->notification = (bool) $notification;
 	}
-	
+
+	/**
+	 * 
+	 * @param int $type
+	 *  DEBUG_REQUEST = 1;
+	 *  DEBUG_RESPONSE = 2;
+	 * @param string $message
+	 */
+	private function debugLog($type, $message) {
+		if ($this->debug & $type) {
+			echo $message . PHP_EOL . PHP_EOL;
+		}
+	}
+
 	/**
 	 * Performs a jsonRCP request and gets the results as an array
 	 *
@@ -122,7 +150,7 @@ class jsonRPCClient {
 						'params' => $params,
 						'id' => $currentId
 						));
-		$this->debug && $this->debug .= '***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****' . "\n\n";
+		$this->debugLog(self::DEBUG_REQUEST, '***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****');
 
 		// performs the HTTP POST
 		$opts = array ('http' => array (
@@ -130,24 +158,22 @@ class jsonRPCClient {
 							'header'  => 'Content-type: application/json',
 							'content' => $request
 							));
+
 		$context  = stream_context_create($opts);
-		if ($fp = fopen($this->url, 'r', false, $context)) {
-			$response = '';
-			while($row = fgets($fp)) {
-				$response .= trim($row)."\n";
-			}
-			fclose($fp);
-			$this->debug && $this->debug .= '***** Server response *****' . "\n" . $response . '***** End of server response *****' . "\n";
-			$response = json_decode($response, true);
-		} else {
+		$fp = fopen($this->url, 'r', false, $context);
+		if (!$fp) {
 			throw new Exception('Unable to connect to ' . $this->url);
 		}
-		
-		// debug output
-		if ($this->debug) {
-			echo nl2br($this->debug);
+
+		$response = '';
+		while (!feof($fp)) {
+			$response .= trim(fgets($fp)) . "\n";
 		}
-		
+		fclose($fp);
+
+		$this->debugLog(self::DEBUG_RESPONSE, '***** Server response *****' . "\n" . $response . '***** End of server response *****');
+		$response = json_decode($response, true);
+
 		// final checks and return
 		if (!$this->notification) {
 			// check
