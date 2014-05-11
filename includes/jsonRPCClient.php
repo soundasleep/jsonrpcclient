@@ -68,12 +68,15 @@ class jsonRPCClient {
 	 *
 	 * @param string $url
 	 * @param boolean $debug
+	 * @param string $proxy
 	 */
-	public function __construct($url, $debug = false) {
+	public function __construct($url, $debug = false, $proxy = '') {
 		// server URL
 		$this->url = $url;
 		// debug state
 		$this->debug = $debug ? self::DEBUG_REQUEST | self::DEBUG_RESPONSE : 0;
+		// proxy
+		$this->proxy = $proxy;
 	}
 
 	/**
