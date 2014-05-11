@@ -29,8 +29,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 class jsonRPCClient {
 
-	const DEBUG_REQUEST = 1;
-	const DEBUG_RESPONSE = 2;
+	const DEBUG_REQUEST = 0x1;
+	const DEBUG_RESPONSE = 0x2;
 
 	/**
 	 * Debug state
@@ -67,10 +67,13 @@ class jsonRPCClient {
 	 * Takes the connection parameters
 	 *
 	 * @param string $url
+	 * @param boolean $debug
 	 */
-	public function __construct($url) {
+	public function __construct($url, $debug = false) {
 		// server URL
 		$this->url = $url;
+		// debug state
+		$this->debug = $debug ? self::DEBUG_REQUEST | self::DEBUG_RESPONSE : 0;
 	}
 
 	/**
@@ -102,9 +105,9 @@ class jsonRPCClient {
 
 	/**
 	 * 
-	 * @param int $type
-	 *  DEBUG_REQUEST = 1;
-	 *  DEBUG_RESPONSE = 2;
+	 * @param int $type bitwise
+	 *  DEBUG_REQUEST = 0x1
+	 *  DEBUG_RESPONSE = 0x2
 	 * @param string $message
 	 */
 	private function debugLog($type, $message) {
