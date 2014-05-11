@@ -18,7 +18,7 @@ Any comments, criticisms, suggests and clarification requests can be addressed t
 ## Git fork
 
 This is a fork of the original project from http://jsonrpcphp.org/
-which only adds [Composer](http://getcomposer.org/) support.
+which only adds [Composer](http://getcomposer.org/) support ( [Packagist](https://packagist.org/packages/soundasleep/jsonrpcclient)).
 
 ## Copyright
 
