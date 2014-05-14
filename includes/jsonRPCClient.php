@@ -38,14 +38,14 @@ class jsonRPCClient {
 	 *
 	 * @var boolean
 	 */
-	private $debug = 0;
+	protected $debug = 0;
 
 	/**
 	 * The server URL
 	 *
 	 * @var string
 	 */
-	private $url = null;
+	protected $url = null;
 	/**
 	 * The request id
 	 *
@@ -57,17 +57,17 @@ class jsonRPCClient {
 	 *
 	 * @var boolean
 	 */
-	private $notification = false;
+	protected $notification = false;
 	/**
 	 *
 	 * @var string
 	 */
-	private $proxy = '';
+	protected $proxy = '';
 	/**
 	 *
 	 * @var array
 	 */
-	private $headers = array();
+	protected $headers = array();
 
 	/**
 	 * Takes the connection parameters
@@ -123,7 +123,7 @@ class jsonRPCClient {
 	 * @param int $debug bitwise combination of debug flags
 	 * @param string $message
 	 */
-	private function debugLog($debug, $message) {
+	protected function debugLog($debug, $message) {
 		if ($this->debug & $debug) {
 			echo $message . PHP_EOL . PHP_EOL;
 		}
@@ -161,19 +161,19 @@ class jsonRPCClient {
 		}
 
 		$request_data = array(
-		    'method' => $method,
-		    'params' => $params,
-		    'id' => $currentId
+			'method' => $method,
+			'params' => $params,
+			'id' => $currentId
 		);
 		
 		if ($this->proxy) {
-		    $request_data['proxy'] = $this->proxy;
+			$request_data['proxy'] = $this->proxy;
 		}
 
 		// prepares the request
 		$request = json_encode($request_data);
 		$this->debugLog(self::DEBUG_REQUEST, '***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****');
-		
+
 		$this->headers[] = 'Content-type: application/json';
 		$this->headers[] = 'Content-Length: ' . strlen($request);
 
