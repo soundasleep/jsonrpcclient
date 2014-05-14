@@ -186,6 +186,8 @@ class jsonRPCClient {
 
 		$context  = stream_context_create($opts);
 
+		$this->headers = array();
+
 		$fp = fopen($this->url, 'r', false, $context);
 		if (!$fp) {
 			throw new Exception('Unable to connect to ' . $this->url);
