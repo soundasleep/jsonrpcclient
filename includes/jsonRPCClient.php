@@ -172,7 +172,7 @@ class jsonRPCClient {
 
 		// prepares the request
 		$request = json_encode($request_data);
-		$this->debugLog(self::DEBUG_REQUEST, '***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****');
+		$this->debugLog(self::DEBUG_REQUEST, '***** Request *****' . PHP_EOL . $request . PHP_EOL . '***** End Of request *****');
 
 		$this->headers[] = 'Content-type: application/json';
 		$this->headers[] = 'Content-Length: ' . strlen($request);
@@ -199,7 +199,7 @@ class jsonRPCClient {
 		}
 		fclose($fp);
 
-		$this->debugLog(self::DEBUG_RESPONSE, '***** Server response *****' . "\n" . $response . '***** End of server response *****');
+		$this->debugLog(self::DEBUG_RESPONSE, '***** Server response *****' . PHP_EOL . $response . '***** End of server response *****');
 		$response = json_decode($response, true);
 
 		// final checks and return
