@@ -110,8 +110,8 @@ class jsonRPCClient {
 	 * @param int $debug bitwise combination of debug flags
 	 * @param string $message
 	 */
-	private function debugLog($type, $message) {
-		if ($this->debug & $type) {
+	private function debugLog($debug, $message) {
+		if ($this->debug & $debug) {
 			echo $message . PHP_EOL . PHP_EOL;
 		}
 	}
