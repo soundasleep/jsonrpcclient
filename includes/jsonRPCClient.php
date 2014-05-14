@@ -51,7 +51,7 @@ class jsonRPCClient {
 	 *
 	 * @var integer
 	 */
-	private $id = 0;
+	protected static $id = 0;
 	/**
 	 * If true, notifications are performed instead of requests
 	 *
@@ -63,6 +63,11 @@ class jsonRPCClient {
 	 * @var string
 	 */
 	private $proxy = '';
+	/**
+	 *
+	 * @var array
+	 */
+	private $headers = array();
 
 	/**
 	 * Takes the connection parameters
@@ -78,6 +83,14 @@ class jsonRPCClient {
 		$this->debug = $debug ? self::DEBUG_REQUEST | self::DEBUG_RESPONSE : 0;
 		// proxy
 		$this->proxy = $proxy;
+	}
+
+	/**
+	 * 
+	 * @param string $header
+	 */
+	public function setHeader($header) {
+		$this->headers[] = $header;
 	}
 
 	/**
@@ -125,7 +138,7 @@ class jsonRPCClient {
 	 */
 	public function __call($method, $params) {
 
-		++$this->id;
+		++static::$id;
 
 		// check
 		if (!is_scalar($method)) {
@@ -144,25 +157,35 @@ class jsonRPCClient {
 		if ($this->notification) {
 			$currentId = NULL;
 		} else {
-			$currentId = $this->id;
+			$currentId = static::$id;
+		}
+
+		$request_data = array(
+		    'method' => $method,
+		    'params' => $params,
+		    'id' => $currentId
+		);
+		
+		if ($this->proxy) {
+		    $request_data['proxy'] = $this->proxy;
 		}
 
 		// prepares the request
-		$request = json_encode(array(
-						'method' => $method,
-						'params' => $params,
-						'id' => $currentId
-						));
+		$request = json_encode($request_data);
 		$this->debugLog(self::DEBUG_REQUEST, '***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****');
+		
+		$this->headers[] = 'Content-type: application/json';
+		$this->headers[] = 'Content-Length: ' . strlen($request);
 
 		// performs the HTTP POST
 		$opts = array ('http' => array (
 							'method'  => 'POST',
-							'header'  => 'Content-type: application/json',
+							'header'  => implode("\r\n", $this->headers),
 							'content' => $request
 							));
 
 		$context  = stream_context_create($opts);
+
 		$fp = fopen($this->url, 'r', false, $context);
 		if (!$fp) {
 			throw new Exception('Unable to connect to ' . $this->url);
