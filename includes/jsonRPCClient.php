@@ -34,11 +34,12 @@ class jsonRPCClient {
 
 	/**
 	 * Debug state
+	 * Bitwise combination of debug flags (DEBUG_REQUEST, DEBUG_RESPONSE)
 	 *
 	 * @var boolean
 	 */
 	private $debug = 0;
-	
+
 	/**
 	 * The server URL
 	 *
@@ -62,7 +63,7 @@ class jsonRPCClient {
 	 * @var string
 	 */
 	private $proxy = '';
-	
+
 	/**
 	 * Takes the connection parameters
 	 *
@@ -81,9 +82,7 @@ class jsonRPCClient {
 
 	/**
 	 * debug state
-	 * @param int $debug
-	 * DEBUG_REQUEST = 1;
-	 * DEBUG_RESPONSE = 2;
+	 * @param int $debug bitwise combination of debug flags
 	 */
 	public function setDebug($debug) {
 		$this->debug = (int) $debug;
@@ -107,10 +106,8 @@ class jsonRPCClient {
 	}
 
 	/**
-	 * 
-	 * @param int $type bitwise
-	 *  DEBUG_REQUEST = 0x1
-	 *  DEBUG_RESPONSE = 0x2
+	 *
+	 * @param int $debug bitwise combination of debug flags
 	 * @param string $message
 	 */
 	private function debugLog($type, $message) {
@@ -127,14 +124,14 @@ class jsonRPCClient {
 	 * @return array
 	 */
 	public function __call($method, $params) {
-		
+
 		++$this->id;
-		
+
 		// check
 		if (!is_scalar($method)) {
 			throw new Exception('Method name has no scalar value');
 		}
-		
+
 		// check
 		if (is_array($params)) {
 			// no keys
@@ -142,14 +139,14 @@ class jsonRPCClient {
 		} else {
 			throw new Exception('Params must be given as array');
 		}
-		
+
 		// sets notification or request task
 		if ($this->notification) {
 			$currentId = NULL;
 		} else {
 			$currentId = $this->id;
 		}
-		
+
 		// prepares the request
 		$request = json_encode(array(
 						'method' => $method,
@@ -189,7 +186,7 @@ class jsonRPCClient {
 			if (!is_null($response['error'])) {
 				throw new Exception('Request error: ' . $response['error']);
 			}
-			
+
 			return $response['result'];
 		}
 
