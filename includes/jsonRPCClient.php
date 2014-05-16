@@ -38,31 +38,36 @@ class jsonRPCClient {
 	 *
 	 * @var boolean
 	 */
-	private $debug = 0;
+	protected $debug = 0;
 
 	/**
 	 * The server URL
 	 *
 	 * @var string
 	 */
-	private $url = null;
+	protected $url = null;
 	/**
 	 * The request id
 	 *
 	 * @var integer
 	 */
-	private $id = 0;
+	protected static $id = 0;
 	/**
 	 * If true, notifications are performed instead of requests
 	 *
 	 * @var boolean
 	 */
-	private $notification = false;
+	protected $notification = false;
 	/**
 	 *
 	 * @var string
 	 */
-	private $proxy = '';
+	protected $proxy = '';
+	/**
+	 *
+	 * @var array
+	 */
+	protected $headers = array();
 
 	/**
 	 * Takes the connection parameters
@@ -78,10 +83,36 @@ class jsonRPCClient {
 		$this->debug = $debug ? self::DEBUG_REQUEST | self::DEBUG_RESPONSE : 0;
 		// proxy
 		$this->proxy = $proxy;
+		$this->restoreDefaultHeaders();
 	}
 
 	/**
-	 * debug state
+	 * 
+	 * @param string $type
+	 * @param string $value
+	 */
+	public function setHeader($type, $value) {
+		$this->headers[$type] = $value;
+	}
+
+	/**
+	 * Remove single header from request
+	 * @param string $type
+	 */
+	public function removeHeader($type) {
+		unset($this->headers[$type]);
+	}
+
+	/**
+	 * Restore default header 
+	 */
+	public function restoreDefaultHeaders() {
+		$this->headers = array();
+		$this->headers['Content-type'] = 'application/json';
+	}
+
+	/**
+	 * Set debug state
 	 * @param int $debug bitwise combination of debug flags
 	 */
 	public function setDebug($debug) {
@@ -89,7 +120,7 @@ class jsonRPCClient {
 	}
 
 	/**
-	 * debug state
+	 * Set proxy to be used in connection
 	 * @param string $proxy
 	 */
 	public function setProxy($proxy) {
@@ -110,8 +141,8 @@ class jsonRPCClient {
 	 * @param int $debug bitwise combination of debug flags
 	 * @param string $message
 	 */
-	private function debugLog($type, $message) {
-		if ($this->debug & $type) {
+	protected function debugLog($debug, $message) {
+		if ($this->debug & $debug) {
 			echo $message . PHP_EOL . PHP_EOL;
 		}
 	}
@@ -121,11 +152,12 @@ class jsonRPCClient {
 	 *
 	 * @param string $method
 	 * @param array $params
-	 * @return array
+	 * @return array|boolean
+	 * @throws Exception
 	 */
 	public function __call($method, $params) {
 
-		++$this->id;
+		++static::$id;
 
 		// check
 		if (!is_scalar($method)) {
@@ -144,25 +176,40 @@ class jsonRPCClient {
 		if ($this->notification) {
 			$currentId = NULL;
 		} else {
-			$currentId = $this->id;
+			$currentId = static::$id;
+		}
+
+		$request_data = array(
+			'method' => $method,
+			'params' => $params,
+			'id' => $currentId
+		);
+		
+		if ($this->proxy) {
+			$request_data['proxy'] = $this->proxy;
 		}
 
 		// prepares the request
-		$request = json_encode(array(
-						'method' => $method,
-						'params' => $params,
-						'id' => $currentId
-						));
-		$this->debugLog(self::DEBUG_REQUEST, '***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****');
+		$request = json_encode($request_data);
+		$this->debugLog(self::DEBUG_REQUEST, '***** Request *****' . PHP_EOL . $request . PHP_EOL . '***** End Of request *****');
+
+		$this->headers['Content-Length'] = strlen($request);
+		$headers = array();
+		foreach($this->headers as $key => $value) {
+			$headers[] = $key . ': ' . $value;
+		}
 
 		// performs the HTTP POST
 		$opts = array ('http' => array (
 							'method'  => 'POST',
-							'header'  => 'Content-type: application/json',
+							'header'  => implode("\r\n", $headers),
 							'content' => $request
 							));
 
 		$context  = stream_context_create($opts);
+
+		$this->headers = array();
+
 		$fp = fopen($this->url, 'r', false, $context);
 		if (!$fp) {
 			throw new Exception('Unable to connect to ' . $this->url);
@@ -174,11 +221,12 @@ class jsonRPCClient {
 		}
 		fclose($fp);
 
-		$this->debugLog(self::DEBUG_RESPONSE, '***** Server response *****' . "\n" . $response . '***** End of server response *****');
-		$response = json_decode($response, true);
+		$this->debugLog(self::DEBUG_RESPONSE, '***** Server response *****' . PHP_EOL . $response . '***** End of server response *****');
 
 		// final checks and return
 		if (!$this->notification) {
+			$response = json_decode($response, true);
+
 			// check
 			if ($response['id'] != $currentId) {
 				throw new Exception('Incorrect response id (request id: ' . $currentId . ', response id: ' . $response['id'] . ')');
@@ -189,6 +237,7 @@ class jsonRPCClient {
 
 			return $response['result'];
 		}
+		unset($response);
 
 		return true;
 	}
