@@ -5,7 +5,7 @@
     "type": "library",
     "keywords": [ "php", "json-rpc", "rpc" ],
     "homepage": "https://github.com/soundasleep/jsonrpcclient",
-    "license": "GPLv2",
+    "license": "GPL-2.0",
     "authors": [
         {
             "name": "Sergio Vaccaro",
